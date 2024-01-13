@@ -26,6 +26,7 @@ const useAuthCalls = () => {
   }
 
   const register = async () => {}
+  const register = async () => {}
 
   const logout = async () => {}
 
