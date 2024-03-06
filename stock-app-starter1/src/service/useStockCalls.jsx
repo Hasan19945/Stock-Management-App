@@ -1,4 +1,9 @@
-import { fetchStart, fetchFail, getStockSuccess } from "../features/stockSlice"
+import {
+  fetchStart,
+  fetchFail,
+  getStockSuccess,
+  getProPurBranFirmSuccess,
+} from "../features/stockSlice"
 import useAxios from "./useAxios"
 import { toastErrorNotify, toastSuccessNotify } from "../helper/ToastNotify"
 import { useDispatch } from "react-redux"
@@ -41,6 +46,28 @@ const useStockCalls = () => {
     }
   }
 
+  const getProPurBranFirm = async () => {
+    dispatch(fetchStart())
+    try {
+      const [products, purchases, brands, firms] = await Promise.all([
+        axiosWithToken("/products/"),
+        axiosWithToken("/purchases/"),
+        axiosWithToken("/brands/"),
+        axiosWithToken("/firms/"),
+      ])
+      dispatch(
+        getProPurBranFirmSuccess([
+          products?.data?.data,
+          purchases?.data?.data,
+          brands?.data?.data,
+          firms?.data?.data,
+        ])
+      )
+    } catch (error) {
+      dispatch(fetchFail())
+    }
+  }
+
   const deleteStock = async (url = "firms", id) => {
     dispatch(fetchStart())
     try {
@@ -53,7 +80,31 @@ const useStockCalls = () => {
     }
   }
 
-  return { getStocks, deleteStock }
+  const postStock = async (url = "firms", info) => {
+    dispatch(fetchStart())
+    try {
+      await axiosWithToken.post(`/${url}/`, info)
+      toastSuccessNotify(`${url} kayıdı eklenmiştir.`)
+      getStocks(url)
+    } catch (error) {
+      dispatch(fetchFail())
+      toastErrorNotify(`${url} kaydi eklenemiştir.`)
+    }
+  }
+
+  const putStock = async (url = "firms", info) => {
+    dispatch(fetchStart())
+    try {
+      await axiosWithToken.put(`/${url}/${info._id}`, info)
+      toastSuccessNotify(`${url} kayıdı güncellenmiştir..`)
+      getStocks(url)
+    } catch (error) {
+      dispatch(fetchFail())
+      toastErrorNotify(`${url} kaydi güncelenememiştir.`)
+    }
+  }
+
+  return { getStocks, deleteStock, postStock, putStock, getProPurBranFirm }
 }
 
 export default useStockCalls
